@@ -281,6 +281,8 @@ function initGIS(){
   tokenClient=google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
     scope: SCOPES,
+    ux_mode: 'redirect',
+    redirect_uri: window.location.origin + window.location.pathname,
     callback: (resp)=>{
       if(resp.error){setLStatus('Erreur: '+resp.error);return;}
       accessToken=resp.access_token;
