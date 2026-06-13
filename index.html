@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1a1a2e">
+<title>Clientis 2.0</title>
+<link rel="manifest" href="manifest.json">
+<style>
+:root {
+  --bg:#0f0f1a; --surface:#1a1a2e; --surface2:#16213e; --accent:#e67e22;
+  --text:#e8e8f0; --text2:#9999bb; --green:#2ecc71; --red:#e74c3c;
+  --border:#2a2a4a; --r:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+.header{background:var(--surface);padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.header-title{font-size:19px;font-weight:800;color:var(--accent)}
+.header-sub{font-size:11px;color:var(--text2);margin-top:2px}
+.btn-icon{background:none;border:none;color:var(--text);font-size:20px;cursor:pointer;padding:6px;border-radius:8px}
+.status-bar{background:var(--surface2);padding:7px 14px;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--text2);flex-shrink:0}
+.dot.ok{background:var(--green)} .dot.warn{background:var(--accent)} .dot.err{background:var(--red)}
+.screen{display:none;padding:14px;padding-bottom:78px} .screen.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.card-title{font-size:11px;font-weight:700;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;color:var(--text2);margin-bottom:5px;font-weight:600}
+.field input,.field select,.field textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:15px;padding:10px 12px;-webkit-appearance:none;font-family:inherit}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent)}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath fill='%239999bb' d='M0 0l6 8 6-8z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.field textarea{resize:none;min-height:80px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:var(--r);font-size:15px;font-weight:700;border:none;cursor:pointer;transition:opacity 0.15s}
+.btn:active{opacity:0.75}
+.btn-p{background:var(--accent);color:#fff} .btn-s{background:var(--surface);border:1px solid var(--border);color:var(--text)}
+.btn-g{background:var(--green);color:#111} .btn-d{background:var(--red);color:#fff}
+.btn-sm{width:auto;padding:8px 14px;font-size:13px;border-radius:8px}
+.brow{display:flex;gap:8px;margin-bottom:12px} .brow .btn{flex:1}
+.entry-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px}
+.eh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.edate{font-size:12px;color:var(--text2)}
+.etype{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(230,126,34,.15);color:var(--accent)}
+.etext{font-size:14px;color:var(--text);line-height:1.45}
+.epj{margin-top:5px;font-size:12px;color:var(--accent)}
+.ea{display:flex;gap:8px;margin-top:8px}
+.nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;z-index:100}
+.nitem{flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px;cursor:pointer;border:none;background:none;color:var(--text2);font-size:10px;gap:2px}
+.nitem.active{color:var(--accent)} .nitem .ico{font-size:22px}
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:flex-end}
+.modal-ov.open{display:flex}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;padding:18px 16px 30px;width:100%;max-height:92vh;overflow-y:auto}
+.mhandle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px}
+.mtitle{font-size:18px;font-weight:800;color:var(--text);margin-bottom:14px}
+.login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:32px 24px;text-align:center}
+.login-logo{font-size:60px;margin-bottom:14px}
+.login-title{font-size:28px;font-weight:900;color:var(--accent);margin-bottom:6px}
+.login-sub{font-size:14px;color:var(--text2);margin-bottom:28px;line-height:1.6}
+.g-btn{background:#fff;color:#333;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 24px;border-radius:12px;border:none;cursor:pointer;width:100%;max-width:300px;font-size:16px}
+.tranche-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.tranche-row:last-child{border-bottom:none}
+.cname{font-size:22px;font-weight:800}
+.cnum{font-size:12px;color:var(--accent);font-weight:700;background:rgba(230,126,34,.1);border-radius:6px;padding:3px 8px;display:inline-block;margin-top:5px}
+.cppr{font-size:12px;color:var(--text2);margin-top:4px}
+.esq-ok{background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.3);border-radius:10px;padding:10px;margin-bottom:6px}
+.esq-pend{background:rgba(230,126,34,.1);border:1px solid rgba(230,126,34,.3);border-radius:10px;padding:10px;margin-bottom:6px}
+.badge{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:700}
+.bg{background:rgba(46,204,113,.15);color:var(--green);border:1px solid rgba(46,204,113,.3)}
+.bo{background:rgba(230,126,34,.15);color:var(--accent);border:1px solid rgba(230,126,34,.3)}
+.empty{text-align:center;padding:40px 20px;color:var(--text2)}
+.empty .ico{font-size:44px;margin-bottom:10px}
+.toast{position:fixed;bottom:82px;left:12px;right:12px;background:#222;color:#fff;padding:12px;border-radius:10px;font-size:14px;z-index:300;opacity:0;transition:opacity .3s;text-align:center}
+.toast.show{opacity:1}
+.divider{height:1px;background:var(--border);margin:10px 0}
+</style>
+</head>
+<body>
+
+<div id="screen-login" class="login-screen">
+  <div class="login-logo">🏠</div>
+  <div class="login-title">Clientis 2.0</div>
+  <div class="login-sub">Plan Maison Tahiti<br>Connectez-vous pour accéder<br>à vos données clients</div>
+  <button class="g-btn" onclick="signIn()">
+    <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.4 1.2 8.7 3.2l6.5-6.5C35.2 2.8 30 .5 24 .5 14.7.5 6.7 5.8 2.8 13.5l7.6 5.9C12.3 13.3 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.5 3-2.2 5.5-4.7 7.2l7.3 5.7c4.3-4 6.8-9.9 6.8-16.9z"/><path fill="#FBBC05" d="M10.4 28.6A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.6L2.7 13.5A23.5 23.5 0 0 0 .5 24c0 3.8.9 7.3 2.5 10.5l7.4-5.9z"/><path fill="#34A853" d="M24 47.5c6.1 0 11.2-2 14.9-5.4l-7.3-5.7c-2 1.4-4.6 2.2-7.6 2.2-6.3 0-11.7-4.2-13.6-9.9l-7.4 5.9C6.7 42.2 14.7 47.5 24 47.5z"/></svg>
+    Connexion Google
+  </button>
+  <div id="login-status" style="margin-top:14px;font-size:12px;color:var(--text2)"></div>
+</div>
+
+<div id="app" style="display:none">
+  <div class="header">
+    <div>
+      <div class="header-title">Clientis 2.0</div>
+      <div class="header-sub" id="hclient">Plan Maison Tahiti</div>
+    </div>
+    <div style="display:flex;gap:4px">
+      <button class="btn-icon" onclick="syncFromDrive()" title="Sync">🔄</button>
+      <button class="btn-icon" onclick="signOut()">⏻</button>
+    </div>
+  </div>
+  <div class="status-bar">
+    <div class="dot" id="sdot"></div>
+    <span id="stext">Chargement…</span>
+  </div>
+
+  <div id="screen-fiche" class="screen active">
+    <div class="card">
+      <div class="card-title">Fiche client</div>
+      <div id="client-display"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Esquisse</div>
+      <div id="esq-display"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Tranches</div>
+      <div id="tranches-display"></div>
+    </div>
+    <button class="btn btn-p" onclick="showEditFiche()">✏️ Modifier la fiche</button>
+  </div>
+
+  <div id="screen-journal" class="screen">
+    <div class="brow">
+      <button class="btn btn-p btn-sm" onclick="showAddEntry()">+ Entrée</button>
+      <button class="btn btn-s btn-sm" onclick="showAddRdv()">📅 RDV</button>
+      <button class="btn btn-s btn-sm" onclick="showEmail()">📧 Email</button>
+    </div>
+    <div id="entries-list"></div>
+  </div>
+
+  <div id="screen-sync" class="screen">
+    <div class="card">
+      <div class="card-title">Google Drive</div>
+      <div class="field">
+        <label>ID dossier Drive (optionnel)</label>
+        <input type="text" id="drive-folder-id" placeholder="Laisser vide = racine" oninput="saveFid()">
+      </div>
+      <div class="field">
+        <label>Nom du fichier JSON</label>
+        <input type="text" id="drive-filename" value="clientis_data.json">
+      </div>
+      <button class="btn btn-g" onclick="syncFromDrive()" style="margin-bottom:10px">⬇️ Charger depuis Drive</button>
+      <button class="btn btn-p" onclick="saveToDrive()">⬆️ Sauvegarder sur Drive</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Dernière synchro</div>
+      <div id="last-sync" style="font-size:13px;color:var(--text2)">—</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Comment ça marche</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.6">
+        Le PC Clientis 2.0 exporte automatiquement <b>clientis_data.json</b> sur votre Drive après chaque sauvegarde.<br><br>
+        Cette app lit ce fichier. Vos modifications sont re-sauvegardées sur Drive et synchronisées au PC lors du prochain chargement.
+      </div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <button class="nitem active" onclick="showScreen('fiche',this)"><span class="ico">👤</span><span>Fiche</span></button>
+    <button class="nitem" onclick="showScreen('journal',this)"><span class="ico">📋</span><span>Journal</span></button>
+    <button class="nitem" onclick="showScreen('sync',this)"><span class="ico">☁️</span><span>Drive</span></button>
+  </nav>
+</div>
+
+<!-- MODAL FICHE -->
+<div class="modal-ov" id="modal-fiche">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle">Modifier la fiche</div>
+    <div class="field"><label>Nom</label><input type="text" id="f-nom"></div>
+    <div class="field"><label>Prénom</label><input type="text" id="f-prenom"></div>
+    <div class="field"><label>N° client</label><input type="text" id="f-numero"></div>
+    <div class="field"><label>PPR</label>
+      <select id="f-ppr">
+        <option value=""></option>
+        <option>blanc</option><option>MER - vert 50cm / pilotis</option><option>MER - bleu 100cm / pilotis</option>
+        <option>MER - rouge</option><option>MVT - vert</option><option>MVT - bleu</option><option>MVT - rouge</option>
+        <option>INN - vert 50cm / pilotis</option><option>INN - bleu 100cm / pilotis</option><option>INN - rouge</option>
+      </select>
+    </div>
+    <div class="field"><label>Date 1ère esquisse</label><input type="text" id="f-esq" placeholder="JJ/MM/AAAA"></div>
+    <div class="field" style="display:flex;align-items:center;gap:10px">
+      <input type="checkbox" id="f-conf" style="width:20px;height:20px">
+      <label for="f-conf" style="margin:0;font-size:15px">Esquisse confirmée</label>
+    </div>
+    <div class="divider"></div>
+    <div id="f-tranches"></div>
+    <div class="brow" style="margin-top:10px">
+      <button class="btn btn-s" onclick="closeModal('modal-fiche')">Annuler</button>
+      <button class="btn btn-p" onclick="saveFiche()">✔ Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ENTRY -->
+<div class="modal-ov" id="modal-entry">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle" id="etitle">Nouvelle entrée</div>
+    <div class="field"><label>Date</label><input type="text" id="e-date" placeholder="JJ/MM/AAAA"></div>
+    <div class="field"><label>Heure</label><input type="text" id="e-heure" placeholder="HH:MM"></div>
+    <div class="field"><label>Type</label>
+      <select id="e-type"><option>RDV</option><option>tél</option><option>MP</option><option>SMS</option><option>courriel</option><option>whatsapp</option><option>sans</option></select>
+    </div>
+    <div class="field"><label>Texte</label><textarea id="e-text" rows="4"></textarea></div>
+    <input type="hidden" id="e-idx">
+    <div class="brow">
+      <button class="btn btn-s" onclick="closeModal('modal-entry')">Annuler</button>
+      <button class="btn btn-p" onclick="saveEntry()">✔ Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RDV -->
+<div class="modal-ov" id="modal-rdv">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle">Nouveau RDV</div>
+    <div class="field"><label>Date</label><input type="text" id="r-date" placeholder="JJ/MM/AAAA"></div>
+    <div class="field"><label>Heure</label><input type="text" id="r-heure" placeholder="HH:MM"></div>
+    <div class="field"><label>Description</label><input type="text" id="r-desc"></div>
+    <div class="field"><label>Confirmé par</label>
+      <select id="r-method"><option>courriel</option><option>tél</option><option>mp</option><option>whatsapp</option><option>sms</option><option>RDV</option></select>
+    </div>
+    <div class="brow">
+      <button class="btn btn-s" onclick="closeModal('modal-rdv')">Annuler</button>
+      <button class="btn btn-p" onclick="saveRdv()">✔ Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EMAIL -->
+<div class="modal-ov" id="modal-email">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle">Rappel email</div>
+    <div class="field"><label>Destinataire</label><input type="email" id="em-to"></div>
+    <div class="field"><label>Sujet</label><input type="text" id="em-subject"></div>
+    <div class="field"><label>Message</label><textarea id="em-body" rows="7"></textarea></div>
+    <div class="brow">
+      <button class="btn btn-s" onclick="closeModal('modal-email')">Annuler</button>
+      <button class="btn btn-p" onclick="openGmail()">📧 Ouvrir Gmail</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const CLIENT_ID='__GOOGLE_CLIENT_ID__';
+const SCOPES='https://www.googleapis.com/auth/drive.file';
+const DISCOVERY=['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'];
+
+let data={meta:{nom:'',prenom:'',numero:'',ppr:'',esquisse_date:'',esquisse_confirmee:'0',tranches_json:'[]',custom_fields_json:'[]'},entries:[],rdvs:[]};
+let driveFileId=null;
+
+function initGapi(){
+  gapi.load('client:auth2',()=>{
+    gapi.client.init({clientId:CLIENT_ID,discoveryDocs:DISCOVERY,scope:SCOPES}).then(()=>{
+      if(gapi.auth2.getAuthInstance().isSignedIn.get()){showApp();syncFromDrive();}
+    }).catch(e=>setLStatus('Erreur init: '+(e.details||e)));
+  });
+}
+function signIn(){
+  setLStatus('Connexion…');
+  gapi.auth2.getAuthInstance().signIn().then(()=>{showApp();syncFromDrive();}).catch(e=>setLStatus('Erreur: '+(e.error||e)));
+}
+function signOut(){
+  gapi.auth2.getAuthInstance().signOut().then(()=>{
+    document.getElementById('app').style.display='none';
+    document.getElementById('screen-login').style.display='flex';
+  });
+}
+function setLStatus(m){document.getElementById('login-status').textContent=m;}
+function showApp(){
+  document.getElementById('screen-login').style.display='none';
+  document.getElementById('app').style.display='block';
+  loadLocal();
+}
+
+// Drive
+function fname(){return document.getElementById('drive-filename')?.value||'clientis_data.json';}
+async function findFile(){
+  const n=fname(),fid=document.getElementById('drive-folder-id')?.value?.trim();
+  let q=`name='${n}' and trashed=false`;
+  if(fid)q+=` and '${fid}' in parents`;
+  const r=await gapi.client.drive.files.list({q,fields:'files(id,name,modifiedTime)',pageSize:5});
+  const f=r.result.files;
+  return f&&f.length?f[0]:null;
+}
+async function syncFromDrive(){
+  setStatus('Chargement Drive…','warn');
+  try{
+    const f=await findFile();
+    if(!f){setStatus('Fichier introuvable sur Drive','err');showToast('Synchronisez depuis le PC d\'abord');return;}
+    driveFileId=f.id;
+    const r=await gapi.client.drive.files.get({fileId:f.id,alt:'media'});
+    data=JSON.parse(r.body);
+    saveLocal();
+    renderAll();
+    document.getElementById('last-sync').textContent='✔ '+new Date().toLocaleString('fr-FR');
+    setStatus('✔ Synchronisé','ok');
+    showToast('Données chargées depuis Drive');
+  }catch(e){setStatus('Erreur Drive: '+(e.result?.error?.message||e),'err');}
+}
+async function saveToDrive(){
+  setStatus('Sauvegarde…','warn');
+  try{
+    const body=JSON.stringify(data,null,2);
+    if(driveFileId){
+      await gapi.client.request({path:`/upload/drive/v3/files/${driveFileId}`,method:'PATCH',params:{uploadType:'media'},headers:{'Content-Type':'application/json'},body});
+    }else{
+      const meta={name:fname(),mimeType:'application/json'};
+      const fid=document.getElementById('drive-folder-id')?.value?.trim();
+      if(fid)meta.parents=[fid];
+      const token=gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token;
+      const form=new FormData();
+      form.append('metadata',new Blob([JSON.stringify(meta)],{type:'application/json'}));
+      form.append('file',new Blob([body],{type:'application/json'}));
+      const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{'Authorization':'Bearer '+token},body:form});
+      driveFileId=(await r.json()).id;
+    }
+    saveLocal();
+    document.getElementById('last-sync').textContent='✔ '+new Date().toLocaleString('fr-FR');
+    setStatus('✔ Sauvegardé sur Drive','ok');
+    showToast('Sauvegardé sur Google Drive');
+  }catch(e){setStatus('Erreur: '+(e.result?.error?.message||e),'err');}
+}
+
+// Local
+function saveLocal(){
+  localStorage.setItem('clientis_data',JSON.stringify(data));
+  localStorage.setItem('clientis_did',driveFileId||'');
+}
+function loadLocal(){
+  const r=localStorage.getItem('clientis_data');
+  if(r)try{data=JSON.parse(r);}catch(e){}
+  driveFileId=localStorage.getItem('clientis_did')||null;
+  const fid=localStorage.getItem('clientis_fid')||'';
+  const el=document.getElementById('drive-folder-id');
+  if(el)el.value=fid;
+  renderAll();
+}
+function saveFid(){localStorage.setItem('clientis_fid',document.getElementById('drive-folder-id').value);}
+
+// Render
+function renderAll(){renderFiche();renderEntries();updateHeader();}
+function updateHeader(){
+  const m=data.meta||{};
+  const n=[m.prenom,m.nom].filter(Boolean).join(' ');
+  document.getElementById('hclient').textContent=n||'Plan Maison Tahiti';
+}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function renderFiche(){
+  const m=data.meta||{};
+  // Client
+  let h=`<div class="cname">${esc(m.prenom)} ${esc(m.nom)}</div>`;
+  if(m.numero)h+=`<div><span class="cnum">N° ${esc(m.numero)}</span></div>`;
+  if(m.ppr)h+=`<div class="cppr">PPR : ${esc(m.ppr)}</div>`;
+  let cf=[];try{cf=JSON.parse(m.custom_fields_json||'[]');}catch(e){}
+  if(cf.length){
+    h+='<div style="margin-top:8px">';
+    cf.forEach(f=>{if(f.name&&f.value)h+=`<div style="font-size:13px;margin-bottom:3px"><span style="color:var(--text2)">${esc(f.name)} :</span> <b>${esc(f.value)}</b></div>`;});
+    h+='</div>';
+  }
+  document.getElementById('client-display').innerHTML=h;
+
+  // Esquisse
+  const ed=m.esquisse_date||'',conf=m.esquisse_confirmee==='1';
+  let eh='';
+  if(ed){
+    const cls=conf?'esq-ok':'esq-pend';
+    eh=`<div class="${cls}">`;
+    eh+=`<div style="font-size:13px"><span style="color:var(--text2)">1ère esquisse :</span> <b>${esc(ed)}</b></div>`;
+    eh+=`<div style="margin-top:4px"><span class="badge ${conf?'bg':'bo'}">${conf?'✔ Confirmée':'En attente'}</span></div>`;
+    try{
+      const p=ed.split('/');const d=new Date(p[2],p[1]-1,p[0]);const j7=new Date(d);j7.setDate(j7.getDate()+7);
+      const t=new Date();t.setHours(0,0,0,0);
+      if(j7<=t&&!conf)eh+=`<div style="font-size:12px;color:var(--accent);margin-top:4px">⚠️ J+7 dépassé — pensez à relancer</div>`;
+    }catch(e){}
+    eh+='</div>';
+  }else{eh='<div style="color:var(--text2);font-size:13px">Pas encore de date d\'esquisse.</div>';}
+  document.getElementById('esq-display').innerHTML=eh;
+
+  // Tranches
+  let tr=[];try{tr=JSON.parse(m.tranches_json||'[]');}catch(e){}
+  let th='';
+  if(!tr.length){th='<div style="color:var(--text2);font-size:13px">Aucune tranche.</div>';}
+  else{tr.forEach((t,i)=>{
+    const l=i===0?'1ère tranche':i===1?'2ème tranche':`${i+1}ème tranche`;
+    th+=`<div class="tranche-row"><span style="font-size:18px">${t.paid?'✅':'⬜'}</span><span style="flex:1;font-size:13px">${l}</span>${t.mode?`<span style="font-size:12px;color:var(--text2)">${esc(t.mode)}</span>`:''}<span style="font-size:12px;color:var(--accent2)">${esc(t.date||'')}</span></div>`;
+  });}
+  document.getElementById('tranches-display').innerHTML=th;
+}
+
+function renderEntries(){
+  const list=document.getElementById('entries-list');
+  const ents=(data.entries||[]).slice().reverse();
+  if(!ents.length){list.innerHTML='<div class="empty"><div class="ico">📋</div><p>Aucune entrée.</p></div>';return;}
+  list.innerHTML=ents.map((e,ri)=>{
+    const idx=(data.entries.length-1)-ri;
+    return `<div class="entry-card">
+      <div class="eh"><span class="edate">${esc(e.date)} ${esc(e.time||'')}</span><span class="etype">${esc(e.type||'')}</span></div>
+      <div class="etext">${esc(e.text||'').replace(/\n/g,'<br>')}</div>
+      ${e.pj?`<div class="epj">📎 ${esc((e.pj||'').split('/').pop().split('\\').pop())}</div>`:''}
+      <div class="ea">
+        <button class="btn btn-s btn-sm" onclick="editEntry(${idx})">✏️</button>
+        <button class="btn btn-d btn-sm" onclick="delEntry(${idx})">🗑️</button>
+      </div></div>`;
+  }).join('');
+}
+
+// Fiche edit
+function showEditFiche(){
+  const m=data.meta||{};
+  document.getElementById('f-nom').value=m.nom||'';
+  document.getElementById('f-prenom').value=m.prenom||'';
+  document.getElementById('f-numero').value=m.numero||'';
+  document.getElementById('f-ppr').value=m.ppr||'';
+  document.getElementById('f-esq').value=m.esquisse_date||'';
+  document.getElementById('f-conf').checked=m.esquisse_confirmee==='1';
+  let tr=[];try{tr=JSON.parse(m.tranches_json||'[]');}catch(e){}
+  const tc=document.getElementById('f-tranches');tc.innerHTML='';
+  tr.forEach((t,i)=>{
+    const l=i===0?'1ère tranche':i===1?'2ème tranche':`${i+1}ème tranche`;
+    tc.innerHTML+=`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <input type="checkbox" id="ft-${i}" ${t.paid?'checked':''} style="width:20px;height:20px">
+      <label for="ft-${i}" style="margin:0;flex:1;font-size:14px">${l}</label>
+      <input type="text" id="fd-${i}" value="${t.date||''}" placeholder="JJ/MM/AAAA" style="width:120px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:6px 10px;font-size:13px">
+    </div>`;
+  });
+  openModal('modal-fiche');
+}
+function saveFiche(){
+  const m=data.meta||{};
+  m.nom=document.getElementById('f-nom').value.trim();
+  m.prenom=document.getElementById('f-prenom').value.trim();
+  m.numero=document.getElementById('f-numero').value.trim();
+  m.ppr=document.getElementById('f-ppr').value;
+  m.esquisse_date=document.getElementById('f-esq').value.trim();
+  m.esquisse_confirmee=document.getElementById('f-conf').checked?'1':'0';
+  let tr=[];try{tr=JSON.parse(m.tranches_json||'[]');}catch(e){}
+  tr.forEach((t,i)=>{
+    const c=document.getElementById(`ft-${i}`),d=document.getElementById(`fd-${i}`);
+    if(c)t.paid=c.checked;if(d)t.date=d.value.trim();
+  });
+  m.tranches_json=JSON.stringify(tr);
+  data.meta=m;
+  closeModal('modal-fiche');renderAll();saveToDrive();
+}
+
+// Entry
+function showAddEntry(){
+  const now=new Date();
+  document.getElementById('e-date').value=now.toLocaleDateString('fr-FR');
+  document.getElementById('e-heure').value=now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('e-type').value='RDV';
+  document.getElementById('e-text').value='';
+  document.getElementById('e-idx').value='';
+  document.getElementById('etitle').textContent='Nouvelle entrée';
+  openModal('modal-entry');
+}
+function editEntry(idx){
+  const e=data.entries[idx];if(!e)return;
+  document.getElementById('e-date').value=e.date||'';
+  document.getElementById('e-heure').value=e.time||'';
+  document.getElementById('e-type').value=e.type||'RDV';
+  document.getElementById('e-text').value=e.text||'';
+  document.getElementById('e-idx').value=idx;
+  document.getElementById('etitle').textContent='Modifier l\'entrée';
+  openModal('modal-entry');
+}
+function saveEntry(){
+  const idx=document.getElementById('e-idx').value;
+  const entry={date:document.getElementById('e-date').value.trim(),time:document.getElementById('e-heure').value.trim(),type:document.getElementById('e-type').value,text:document.getElementById('e-text').value.trim(),pj:''};
+  if(!data.entries)data.entries=[];
+  if(idx==='')data.entries.push(entry);else data.entries[parseInt(idx)]=entry;
+  closeModal('modal-entry');renderEntries();saveToDrive();
+}
+function delEntry(idx){
+  if(!confirm('Supprimer cette entrée ?'))return;
+  data.entries.splice(idx,1);renderEntries();saveToDrive();
+}
+
+// RDV
+function showAddRdv(){
+  const now=new Date();
+  document.getElementById('r-date').value=now.toLocaleDateString('fr-FR');
+  document.getElementById('r-heure').value=now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('r-desc').value=`RDV ${(data.meta?.prenom||'')} ${(data.meta?.nom||'')}`.trim();
+  openModal('modal-rdv');
+}
+function saveRdv(){
+  const date=document.getElementById('r-date').value.trim(),heure=document.getElementById('r-heure').value.trim(),
+    desc=document.getElementById('r-desc').value.trim(),method=document.getElementById('r-method').value;
+  if(!data.entries)data.entries=[];
+  data.entries.push({date,time:heure,type:'RDV',text:`RDV confirmé par ${method} — ${desc}`,pj:''});
+  if(!data.rdvs)data.rdvs=[];
+  data.rdvs.push({date,heure,description:desc,confirm_method:method});
+  closeModal('modal-rdv');renderEntries();saveToDrive();showToast('RDV ajouté');
+}
+
+// Email
+function showEmail(){
+  const m=data.meta||{};
+  let email='';
+  try{const cf=JSON.parse(m.custom_fields_json||'[]');const ef=cf.find(f=>/email|mail|courriel/i.test(f.name));if(ef)email=ef.value||'';}catch(e){}
+  document.getElementById('em-to').value=email;
+  document.getElementById('em-subject').value='Nouvelles de votre projet';
+  document.getElementById('em-body').value=`Iaorana ${m.prenom||''},\n\nJe venais aux nouvelles de ton projet. Peux tu me revenir dans les plus brefs délais ?\n\nCordialement,\nHaynd FROGIER\nPlan Maison Tahiti`;
+  openModal('modal-email');
+}
+function openGmail(){
+  const to=document.getElementById('em-to').value.trim(),
+    su=encodeURIComponent(document.getElementById('em-subject').value.trim()),
+    bo=encodeURIComponent(document.getElementById('em-body').value.trim());
+  window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(to)}&su=${su}&body=${bo}`,'_blank');
+  closeModal('modal-email');
+}
+
+// Utils
+function showScreen(n,el){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nitem').forEach(i=>i.classList.remove('active'));
+  document.getElementById('screen-'+n).classList.add('active');
+  if(el)el.classList.add('active');
+}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function setStatus(msg,type){
+  document.getElementById('stext').textContent=msg;
+  const d=document.getElementById('sdot');
+  d.className='dot'+(type?' '+type:'');
+}
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// SW
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
+
+// Close modal on bg click
+document.querySelectorAll('.modal-ov').forEach(ov=>{
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.classList.remove('open');});
+});
+
+window.onload=()=>{
+  if(typeof gapi==='undefined'){setLStatus('API Google non chargée. Vérifiez la connexion.');return;}
+  initGapi();
+};
+</script>
+<script src="https://apis.google.com/js/api.js" defer></script>
+</body>
+</html>
